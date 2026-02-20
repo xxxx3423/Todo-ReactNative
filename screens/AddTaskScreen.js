@@ -1,21 +1,18 @@
-// AddTaskScreen.js
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LogBox } from 'react-native';
-LogBox.ignoreLogs(['Non-serializable values were found in the navigation state',]);
-const AddTaskScreen = ({ navigation, route }) => {
+
+const AddTaskScreen = ({ navigation }) => {
     const [taskName, setTaskName] = useState('');
     const [taskDescription, setTaskDescription] = useState('');
     const [taskCategory, setTaskCategory] = useState('');
 
     const handleAddTask = () => {
-        // Validation: Task name is necessary
         if (!taskName.trim()) {
-            Alert.alert('Validation Error', 'Task name is required.');
+            Alert.alert('Ошибка', 'Название задачи обязательно');
             return;
         }
 
+        // Создаем объект новой задачи
         const newTask = {
             id: Math.random().toString(),
             name: taskName.trim(),
@@ -23,58 +20,45 @@ const AddTaskScreen = ({ navigation, route }) => {
             category: taskCategory.trim(),
         };
 
-        // Retrieve the existing tasks from AsyncStorage
-        const existingTasks = route.params.tasks || [];
-
-        // Update the tasks with the new task
-        const updatedTasks = [...existingTasks, newTask];
-
-        // Save the updated tasks to AsyncStorage
-        AsyncStorage.setItem('tasks', JSON.stringify(updatedTasks))
-            .then(() => {
-                // Update the tasks state in TaskListScreen
-                route.params.setTasks(updatedTasks);
-            })
-            .catch((error) => {
-                console.error('Error saving tasks to AsyncStorage:', error);
-                Alert.alert('Error', 'Failed to save the task. Please try again.');
-            });
-
-        navigation.goBack(); // Navigate back to TaskListScreen
+        // ПРАВИЛЬНЫЙ СПОСОБ: Передаем задачу назад как параметр навигации
+        // Убедись, что 'TaskList' — это точное название твоего первого экрана в Stack.Navigator
+        navigation.navigate('TaskList', { newTask }); 
     };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Add Task Screen</Text>
+            <Text style={styles.title}>Додати задачу</Text>
 
             <TextInput
                 style={styles.input}
-                placeholder="Task Name *"
+                placeholder="Назва задачі"
                 value={taskName}
-                onChangeText={(text) => setTaskName(text)}
+                onChangeText={setTaskName}
             />
 
             <TextInput
                 style={styles.input}
-                placeholder="Task Description"
+                placeholder="Опис"
                 value={taskDescription}
-                onChangeText={(text) => setTaskDescription(text)}
+                onChangeText={setTaskDescription}
             />
 
             <TextInput
                 style={styles.input}
-                placeholder="Task Category"
+                placeholder="Категорія"
                 value={taskCategory}
-                onChangeText={(text) => setTaskCategory(text)}
+                onChangeText={setTaskCategory}
             />
 
-            <Button title="Add Task" onPress={handleAddTask} />
+            <Button title="Додати задачу" onPress={handleAddTask} />
 
-            <Button
-                title="Go Back"
-                onPress={() => navigation.goBack()}
-                color="#808080"
-            />
+            <View style={{ marginTop: 10 }}>
+                <Button
+                    title="Назад"
+                    onPress={() => navigation.goBack()}
+                    color="#808080"
+                />
+            </View>
         </View>
     );
 };
@@ -82,22 +66,33 @@ const AddTaskScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#add8e6', // Light blue background
+        padding: 24, // Больше отступов для «дыхания» интерфейса
+        backgroundColor: '#F8FAFC', // Светлый серо-голубой фон (выглядит чище)
     },
     title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333', // Dark text color
+        fontSize: 28, // Увеличили размер
+        fontWeight: '800', // Более жирный шрифт для акцента
+        marginBottom: 24,
+        color: '#1E293B', // Глубокий темно-синий вместо черного
+        letterSpacing: -0.5, // Небольшое сужение для премиального вида
     },
     input: {
-        height: 40,
-        borderColor: '#b0c4de', // Lighter blue border color
+        height: 56, // Увеличили высоту для удобства нажатия пальцем
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16, // Сильное скругление — тренд современного дизайна
+        paddingHorizontal: 16,
+        fontSize: 16,
+        color: '#334155',
         borderWidth: 1,
-        marginBottom: 16,
-        paddingHorizontal: 8,
-        backgroundColor: 'white', // White background
+        borderColor: '#E2E8F0', // Очень мягкая граница
+        // Тень для iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        // Тень для Android
+        elevation: 2,
+        marginBottom: 20,
     },
 });
 
